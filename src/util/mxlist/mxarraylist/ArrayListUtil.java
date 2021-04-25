@@ -57,12 +57,12 @@ public class ArrayListUtil {
 
         // 方法5 list.toArray(); 集合转换成数组
 
-        // 方法6 迭代器 待定
+        // 方法6 jdk1.8新引入的，适用于多线程的迭代器
         //list.spliterator();
 
-        // 方法7 迭代器 待定
+        // 方法7 迭代器 已经学习
         // list.listIterator();
-        // 方法8 迭代器 待定
+        // 方法8 迭代器 已经学习
         // list.iterator();
 
 

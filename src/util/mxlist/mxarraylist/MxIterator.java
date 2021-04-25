@@ -14,36 +14,62 @@ import java.util.ListIterator;
  */
 public class MxIterator {
     public static void main(String[] args) {
-        List list = new ArrayList<String>();
-        for (int i = 0; i < 7; i++) {
-            list.add(i+"");
+       /* ArrayList<String> a = new ArrayList<String>();
+        a.add("aaa");
+        a.add("bbb");
+        a.add("ccc");
+        System.out.println("Before iterate : " + a);
+        ListIterator<String> it = a.listIterator();
+        while (it.hasNext()) {
+               System.out.println(it.next() + ", " + it.previousIndex() + ", " + it.nextIndex());
         }
-        // Iterator 基础的迭代器  基础方法有三个  hashnext next remove
-       /* Iterator iterator = list.iterator();
-        while (iterator.hasNext()){
-            Object str = iterator.next();
-            System.out.println(str);
-            if (str.equals("1")){
-                iterator.remove();
+        while (it.hasPrevious()) {
+               System.out.print(it.previous() + " ");
+        }
+        System.out.println();
+        it = a.listIterator(1);//调用listIterator(n)方法创建一个一开始就指向列表索引为n的元素处的ListIterator。
+        while (it.hasNext()) {
+            String t = it.next();
+            System.out.println(t);
+            if ("ccc".equals(t)) {
+                it.set("nnn");
+            } else {
+                it.add("kkk");
             }
         }
-        System.out.println(list);*/
-        // ListIterator 集合特有的迭代器
-        ListIterator listi = list.listIterator();
-        while (listi.hasNext()){
-            Object c = listi.next();
-            System.out.println(c);
-        }
-        /*listi.add("5");
-        listi.add("6");*/
-        System.out.println(list);
+        System.out.println("After iterate : " + a);*/
 
-        // 迭代器倒叙
-        while(listi.hasPrevious()){
-            Object value = listi.previous();
-            System.out.print(value+" ");
-        }
+        List list = new ArrayList();
+        list.add("wxw");
+        list.add("cx");
+        list.add("lixin");
+        ListIterator<String> listIterator = list.listIterator();
+        // 正序排列
+        /*while (listIterator.hasNext()){
+            String str = listIterator.next();
+            listIterator.add("1");
+            if (str.equals("cx")){
+                listIterator.remove();
+            }
+            System.out.println(str);
+            System.out.println(listIterator.previousIndex());
+            System.out.println(listIterator.nextIndex());
+        }*/
+        // 倒叙排列
+        /*while (listIterator.hasPrevious()){
+            String str = listIterator.previous();
+            System.out.println(str);
+        }*/
+        // 创建一个带有索引的迭代器
+        /*ListIterator<String> listIterator1 = list.listIterator(1);
+        while (listIterator1.hasPrevious()){
+            String str = listIterator1.previous();
+            System.out.println(str);
+        }*/
 
-
+        // jdk1.8的新特性迭代器，在多线程的下使用。
+        // 这个就是用来多线程并行迭代的迭代器，这个迭代器的主要作用就是把集合分成了好几段，每个线程执行一段，因此是线程安全的。
+        // 先学习多线程，再回头来学习集合的相关知识
+        list.spliterator();
     }
 }

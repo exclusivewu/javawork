@@ -5,7 +5,10 @@
  */
 public class demo1 {
     public static void main(String[] args){
-        System.out.print("修改操作");
+
+        int i = (int) Math.sqrt(10);
+        System.out.println(i);
+        System.out.println(Math.sqrt(10));
     }
 
 }
