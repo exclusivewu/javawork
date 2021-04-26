@@ -1,6 +1,7 @@
 package util.mxlist.mxvector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -20,10 +21,47 @@ public class VectorUtil {
             vector.add(i+"");
         }
         // vector 的特定方法
-        // 6 indexOf(Object o, int index) 代表查找
+
+        // 剩下的需要在学习lamdba表达式的时候进行学习  涉及到多线程
+
+        // 10 截取数组的方法
+
+        List c = vector.subList(1,3); //12
+        System.out.println(c);
+
+        // 9 toArray() 转化为数组
+
+        /*Object[] ss = vector.toArray();
+        // object数组转化成String数组
+        String str[]= Arrays.copyOf(ss, ss.length, String[].class);
+        for (int i = 0; i < str.length; i++) {
+            System.out.println(str[i]);
+        }*/
+
+        // 8 clone() 克隆操作
+        /*
+        Vector vector1 = (Vector) vector.clone();
+        System.out.println(vector1);
+        */
+
+        // 7 ElementAt 操作
+
+        /*setElementAt(E obj, int index) 修改元素
+        removeElementAt(int index) 删除某个节点
+        insertElementAt(E obj, int index) 插入某个节点
+        lastElement() 返回末节点
+        firstElement() 返回首节点
+        elementAt(int index) 返回index 的元素 ，没有就返回异常
+        addElement(E obj) 新增
+        removeElement(Object obj) 删除
+        removeAllElements() 删除全部元素*/
+
+        // 6 indexOf(Object o, int index) 从index开始查询 lastIndexOf(Object o, int index) 倒叙，查找index之前的数据
 
         // 5 capacity  获取容器的长度;
-        System.out.println(vector.capacity());
+
+        // System.out.println(vector.capacity());
+
         // 4 setSize 重新设置集合大小，比原来的大，扩容，比原来的小，就把多出的元素改为null
 
         // 3 ensureCapacity 扩容操作
@@ -50,20 +88,5 @@ public class VectorUtil {
             System.out.println(anArray[i]);
         }*/
 
-
-        // 3
-        // 4
-        // 5
-        // 6
-        // 7
-        // 8
-        // 9
-        // 10
-        // 11
-        // 12
-        // 13
-        // 14
-        // 15
-        // 16
     }
 }
