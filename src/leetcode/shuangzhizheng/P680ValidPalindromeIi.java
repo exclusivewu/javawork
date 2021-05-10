@@ -1,3 +1,5 @@
+package leetcode.shuangzhizheng;
+
 //给定一个非空字符串 s，最多删除一个字符。判断是否能成为回文字符串。
 //
 // 示例 1:
@@ -24,14 +26,13 @@
 // 👍 348 👎 0
 
 //Java：验证回文字符串 Ⅱ
-public class demo1{
+public class P680ValidPalindromeIi{
     public static void main(String[] args) {
-        Solution solution = new demo1().new Solution();
-        String ss = "qwertrewqs";
-        System.out.println(solution.validPalindrome(ss));
+        Solution solution = new P680ValidPalindromeIi().new Solution();
+        // TO TEST
     }
+    //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
-        // 判断回文
         public boolean validPalindrome(String s) {
             for (int i = 0, j = s.length() - 1; i < j; i++, j--) {
                 if (s.charAt(i) != s.charAt(j)) {
@@ -50,5 +51,7 @@ public class demo1{
             return true;
         }
     }
+//leetcode submit region end(Prohibit modification and deletion)
 
 }
+
