@@ -47,12 +47,31 @@ package leetcode.shuangzhizheng;
 public class P167TwoSumIiInputArrayIsSorted{
     public static void main(String[] args) {
         Solution solution = new P167TwoSumIiInputArrayIsSorted().new Solution();
+        int[] x = {2,5,8,13,67,90};
+        int y = 13;
+        int[] sum = solution.twoSum(x,y);
+        System.out.println(sum[0]+" "+sum[1]);
         // TO TEST
     }
+    // 两数之和，返回坐标
     //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         public int[] twoSum(int[] numbers, int target) {
-            return numbers;
+            int x = 0;
+            int y = numbers.length - 1;
+            while (x <= y){
+                if (numbers[x] + numbers[y] == target) {
+                    int[] d = {x+1,y+1};
+                    return d;
+                }
+                if (numbers[x] + numbers[y] > target) {
+                    y--;
+                }
+                if (numbers[x] + numbers[y] < target) {
+                    x++;
+                }
+            }
+            return null;
         }
     }
 //leetcode submit region end(Prohibit modification and deletion)

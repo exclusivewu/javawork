@@ -45,18 +45,32 @@ package leetcode.shuangzhizheng;
 // 👍 277 👎 0
 
 //Java：平方数之和
+/*解决思路 先确定数据的范围，根据双指针的方法*/
 public class P633SumOfSquareNumbers{
     public static void main(String[] args) {
         Solution solution = new P633SumOfSquareNumbers().new Solution();
+        System.out.println(solution.judgeSquareSum(1));
         // TO TEST
     }
-    //leetcode submit region begin(Prohibit modification and deletion)
     class Solution {
         public boolean judgeSquareSum(int c) {
-            return true;
+            // 找到数据最大的范围
+            int h = (int) Math.sqrt(c);
+            int i = 0;
+            while (i <= h){
+                int sum = i*i+h*h;
+                if (sum == c){
+                    return true;
+                } else if (sum > c){
+                    h--;
+                } else {
+                    i++;
+                }
+            }
+            return false;
         }
     }
-//leetcode submit region end(Prohibit modification and deletion)
+
 
 }
 
