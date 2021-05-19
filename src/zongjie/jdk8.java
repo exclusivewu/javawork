@@ -9,16 +9,11 @@ package zongjie;
  *
  */
 public class jdk8{
-    public static void main(String[] args) {
         int[] a = {1,2,5,7};
         int b = 8;
         haha h = new haha();
         int[] dd =  h.twoSum(a,b);
-        for (int i:dd) {
-            System.out.println(i+"");
-        }
 
-    }
 
 }
 class haha{
