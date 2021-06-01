@@ -1,4 +1,4 @@
-/*
+
 package java.util;
 
 import java.io.IOException;
@@ -11,34 +11,25 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-
- // cloneable接口：需要先实现Cloneable接口，然后再重写 clone 方法进行克隆。否则会报异常
-
-public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneable, Serializable {
-    // 序列化号码
+public class HashMap<K,V> extends AbstractMap<K,V>implements Map<K,V>, Cloneable, Serializable {
+    // 序列化的序列号
     private static final long serialVersionUID = 362498820763181265L;
-
-    // 16 默认就是数组的长度
+    // 默认的数组大小是16
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
 
+    // 数组的最大长度
     static final int MAXIMUM_CAPACITY = 1 << 30;
 
-
-
+    // 默认的扩容因子
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
-    // 链表的长度到达8的时候，就转换成红黑树
+    // 链表的长度达到8时，转化成红黑树
     static final int TREEIFY_THRESHOLD = 8;
 
-    // 红黑树的值为6时，就转换成链表
+    // 红黑树的元素达到6时，转换成链表
     static final int UNTREEIFY_THRESHOLD = 6;
 
-
-
     static final int MIN_TREEIFY_CAPACITY = 64;
-
-
-
 
     static class Node<K,V> implements Map.Entry<K,V> {
         final int hash;
@@ -80,12 +71,11 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
     }
 
-
+    // 计算hash值 进行异或操作。相同为0 不同为1
     static final int hash(Object key) {
         int h;
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
     }
-
 
     static Class<?> comparableClassFor(Object x) {
         if (x instanceof Comparable) {
@@ -106,15 +96,19 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         return null;
     }
 
-
+    /**
+     * Returns k.compareTo(x) if x matches kc (k's screened comparable
+     * class), else 0.
+     */
     @SuppressWarnings({"rawtypes","unchecked"}) // for cast to Comparable
     static int compareComparables(Class<?> kc, Object k, Object x) {
         return (x == null || x.getClass() != kc ? 0 :
                 ((Comparable)k).compareTo(x));
     }
 
-
-    // 该算法确保获得2的幂次方的值
+    /**
+     *  该算法十分精妙，返回的值都是比输入值cap大的最小2次幂。保证通过该方式获取的值在进行数组上索引位置的判定时，不会数组越界。
+     */
     static final int tableSizeFor(int cap) {
         int n = cap - 1;
         n |= n >>> 1;
@@ -125,28 +119,36 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
     }
 
+    /* ---------------- Fields -------------- */
 
-    // 键值对数组
+    /**
+     * 定义的一个hashmap数组
+     */
     transient Node<K,V>[] table;
 
-
+    /**
+     * 键值对
+     */
     transient Set<Map.Entry<K,V>> entrySet;
 
-    // 键值对数量。
+    /**
+     *  代表的是键值对的数量
+     */
     transient int size;
-
-    // 修改次数
 
     transient int modCount;
 
-    // 这个表示的是  数组的长度*扩容因子0.75f得出的容量大小，当键值对总数超过这个容量时，进行扩容。
+    // 键值对容量，在调用构造器的时候，先存的是数组的长度，后面再调用put初始化时，就转换成 threshold * loadFactor的数值
     int threshold;
 
-    // 扩容因子
+    /**
+     * 扩容因子参数
+     */
     final float loadFactor;
 
-
+    // hashmap 的构造器，这里只是定义了一个扩容因子，一个数组长度threshold，
     public HashMap(int initialCapacity, float loadFactor) {
+
         if (initialCapacity < 0)
             throw new IllegalArgumentException("Illegal initial capacity: " +
                     initialCapacity);
@@ -156,39 +158,43 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             throw new IllegalArgumentException("Illegal load factor: " +
                     loadFactor);
         this.loadFactor = loadFactor;
+        // 返回一个比initialCapacity大的最小二次方数
         this.threshold = tableSizeFor(initialCapacity);
     }
 
-
-
+    /**
+     *  如果构造器只穿了默认大小，给默认的扩容因子
+     */
     public HashMap(int initialCapacity) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR);
     }
 
-    // 什么都不传，就把加载因子设为0.75f，但是对初始化大小先不设值
-
-
+    /**
+     * 如果构造器没有参数，就先赋值默认的加载因子，0.75f
+     */
     public HashMap() {
         this.loadFactor = DEFAULT_LOAD_FACTOR; // all other fields defaulted
     }
 
-
-
+    /**
+     *
+     */
     public HashMap(Map<? extends K, ? extends V> m) {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
         putMapEntries(m, false);
     }
 
-
-     // 在克隆的状态下，evict是false。
-
-
+    /**
+     * Implements Map.putAll and Map constructor
+     *
+     * @param m the map
+     * @param evict false when initially constructing this map, else
+     * true (relayed to method afterNodeInsertion).
+     */
     final void putMapEntries(Map<? extends K, ? extends V> m, boolean evict) {
-        // 从这里可以看出，基础数据都是新的存储位置
         int s = m.size();
         if (s > 0) {
-            if (table == null) {
-                // 根据hashmap的键值对大小和负载因子，获得实际需要的键值对容量大小。
+            if (table == null) { // pre-size
                 float ft = ((float)s / loadFactor) + 1.0F;
                 int t = ((ft < (float)MAXIMUM_CAPACITY) ?
                         (int)ft : MAXIMUM_CAPACITY);
@@ -205,27 +211,36 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
     }
 
-    // 返回的是hashmap键值对的数量
+    /**
+     *  返回的是键值对的数量
+     */
     public int size() {
         return size;
     }
 
-
-
-
+    /**
+     *  判断map中还有没有键值对的值
+     */
     public boolean isEmpty() {
         return size == 0;
     }
 
-
-
+    /**
+     *
+     * @see #put(Object, Object)
+     */
     public V get(Object key) {
         Node<K,V> e;
         return (e = getNode(hash(key), key)) == null ? null : e.value;
     }
 
-
-
+    /**
+     * Implements Map.get and related methods
+     *
+     * @param hash hash for key
+     * @param key the key
+     * @return the node, or null if none
+     */
     final Node<K,V> getNode(int hash, Object key) {
         Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
         if ((tab = table) != null && (n = tab.length) > 0 &&
@@ -246,27 +261,35 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         return null;
     }
 
-
+    /**
+     * Returns <tt>true</tt> if this map contains a mapping for the
+     * specified key.
+     *
+     * @param   key   The key whose presence in this map is to be tested
+     * @return <tt>true</tt> if this map contains a mapping for the specified
+     * key.
+     */
     public boolean containsKey(Object key) {
         return getNode(hash(key), key) != null;
     }
 
-    // 看一下 如果就是一个空的map ，在进行插入时，数组怎么初始化
-
-
+    /**
+     * 调用hashmap的put方法，当hashmap还没有初始化时，这个行为就是初始化的动作。调用putVal方法。
+     */
     public V put(K key, V value) {
         return putVal(hash(key), key, value, false, true);
     }
 
-    // 进行插入 onlyIfAbsent = false,  evict = true.
-
-
+    /**
+     * 通过调用putVal方法，来实现元素的加载.
+     */
     final V putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict) {
+        // 定义一个数组，一个键值对，一个数组长度n.
         Node<K,V>[] tab; Node<K,V> p; int n, i;
-        // 如果原来的数组还是空的，一点长度都没有，调用resize()来创建一个数组，返回了一个初始化大小的数组
+        // 如果原hashmap数组是空或者长度为0，就需要进行resize方法进行初始化。
         if ((tab = table) == null || (n = tab.length) == 0)
+            // 调用resize方法进行初始化
             n = (tab = resize()).length;
-        // 如果插入位置节点是null 就直接将该节点插入。
         if ((p = tab[i = (n - 1) & hash]) == null)
             tab[i] = newNode(hash, key, value, null);
         else {
@@ -299,45 +322,44 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             }
         }
         ++modCount;
-        // 如果键值对的数量大于 数组长度*扩容因子
         if (++size > threshold)
             resize();
         afterNodeInsertion(evict);
         return null;
     }
 
-*
-     * 初始化或者扩容数组  扩容数组操作
-
-
+    /**
+     * 重要方法，数组的扩容方法。
+     */
     final Node<K,V>[] resize() {
         Node<K,V>[] oldTab = table;
-        // oldCap 定义成数组的长度
+        // oldCap 数组的长度
         int oldCap = (oldTab == null) ? 0 : oldTab.length;
-        // oldThr 就是键值对的最大容量，超过就要扩容
+        //  数组的键值对容量
         int oldThr = threshold;
-
         int newCap, newThr = 0;
-        // 有数据
+        // 当出现数组长度大于0
         if (oldCap > 0) {
             if (oldCap >= MAXIMUM_CAPACITY) {
                 threshold = Integer.MAX_VALUE;
                 return oldTab;
             }
-            // 数组的长度和扩容容量都增大一倍
             else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
                     oldCap >= DEFAULT_INITIAL_CAPACITY)
                 newThr = oldThr << 1; // double threshold
         }
-        // 也跳过 虽然不知道啥意思
-        else if (oldThr > 0) // initial capacity was placed in threshold
+
+        // 当出现键值对数量大于零，当hashmap初始化的时候，看看有没有给初始化赋值了，赋值的值就代表了数组的长度
+        else if (oldThr > 0)
             newCap = oldThr;
-        else {               // zero initial threshold signifies using defaults
-            // newCap 就是数组的长度，为16
+        // 原数组为空的情况
+        else {
+            // 数组长度默认赋值是16
             newCap = DEFAULT_INITIAL_CAPACITY;
-            // 设定容量值，超过扩容
+            // 实际的键值对存储数量
             newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
         }
+        // 求出键值对数量的限制
         if (newThr == 0) {
             float ft = (float)newCap * loadFactor;
             newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
@@ -345,20 +367,24 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
         threshold = newThr;
         @SuppressWarnings({"rawtypes","unchecked"})
-        // 创建一个新长度的数组
+        // 创建出一个新的数组，数组长度是newCap。并且赋值为table。
         Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
         table = newTab;
-        // 当原来的数组不是null，就要进行转化到新数组，我感觉就是一个一个塞进去
+        // 当原数组不为null 把旧数组上的数据转到新的数组上，其中涉及到的链表或者红黑树，重新依次插入
         if (oldTab != null) {
-            // 循环一下数组
+            // 循环oldcap的
             for (int j = 0; j < oldCap; ++j) {
-
                 Node<K,V> e;
+                // 当该索引的节点不是null
                 if ((e = oldTab[j]) != null) {
                     oldTab[j] = null;
+                    // 如果该节点没有后续节点
                     if (e.next == null)
+                        // 找到索引的位置并且插入该节点
                         newTab[e.hash & (newCap - 1)] = e;
+                    // 如果有后续节点，而且后续节点
                     else if (e instanceof TreeNode)
+                        // 调用方法，来进行转换
                         ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
                     else { // preserve order
                         Node<K,V> loHead = null, loTail = null;
@@ -396,11 +422,10 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         return newTab;
     }
 
-*
+    /**
      * Replaces all linked nodes in bin at index for given hash unless
      * table is too small, in which case resizes instead.
-
-
+     */
     final void treeifyBin(Node<K,V>[] tab, int hash) {
         int n, index; Node<K,V> e;
         if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY)
@@ -422,20 +447,19 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
     }
 
-*
+    /**
      * Copies all of the mappings from the specified map to this map.
      * These mappings will replace any mappings that this map had for
      * any of the keys currently in the specified map.
      *
      * @param m mappings to be stored in this map
      * @throws NullPointerException if the specified map is null
-
-
+     */
     public void putAll(Map<? extends K, ? extends V> m) {
         putMapEntries(m, true);
     }
 
-*
+    /**
      * Removes the mapping for the specified key from this map if present.
      *
      * @param  key key whose mapping is to be removed from the map
@@ -443,15 +467,14 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
      *         <tt>null</tt> if there was no mapping for <tt>key</tt>.
      *         (A <tt>null</tt> return can also indicate that the map
      *         previously associated <tt>null</tt> with <tt>key</tt>.)
-
-
+     */
     public V remove(Object key) {
         Node<K,V> e;
         return (e = removeNode(hash(key), key, null, false, true)) == null ?
                 null : e.value;
     }
 
-*
+    /**
      * Implements Map.remove and related methods
      *
      * @param hash hash for key
@@ -460,8 +483,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
      * @param matchValue if true only remove if value is equal
      * @param movable if false do not move other nodes while removing
      * @return the node, or null if none
-
-
+     */
     final Node<K,V> removeNode(int hash, Object key, Object value,
                                boolean matchValue, boolean movable) {
         Node<K,V>[] tab; Node<K,V> p; int n, index;
@@ -503,11 +525,10 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         return null;
     }
 
-*
+    /**
      * Removes all of the mappings from this map.
      * The map will be empty after this call returns.
-
-
+     */
     public void clear() {
         Node<K,V>[] tab;
         modCount++;
@@ -518,15 +539,14 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
     }
 
-*
+    /**
      * Returns <tt>true</tt> if this map maps one or more keys to the
      * specified value.
      *
      * @param value value whose presence in this map is to be tested
      * @return <tt>true</tt> if this map maps one or more keys to the
      *         specified value
-
-
+     */
     public boolean containsValue(Object value) {
         Node<K,V>[] tab; V v;
         if ((tab = table) != null && size > 0) {
@@ -541,7 +561,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         return false;
     }
 
-*
+    /**
      * Returns a {@link Set} view of the keys contained in this map.
      * The set is backed by the map, so changes to the map are
      * reflected in the set, and vice-versa.  If the map is modified
@@ -555,8 +575,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
      * operations.
      *
      * @return a set view of the keys contained in this map
-
-
+     */
     public Set<K> keySet() {
         Set<K> ks;
         return (ks = keySet) == null ? (keySet = new KeySet()) : ks;
@@ -589,7 +608,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
     }
 
-*
+    /**
      * Returns a {@link Collection} view of the values contained in this map.
      * The collection is backed by the map, so changes to the map are
      * reflected in the collection, and vice-versa.  If the map is
@@ -603,8 +622,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
      * support the <tt>add</tt> or <tt>addAll</tt> operations.
      *
      * @return a view of the values contained in this map
-
-
+     */
     public Collection<V> values() {
         Collection<V> vs;
         return (vs = values) == null ? (values = new Values()) : vs;
@@ -634,8 +652,22 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
     }
 
-
-
+    /**
+     * Returns a {@link Set} view of the mappings contained in this map.
+     * The set is backed by the map, so changes to the map are
+     * reflected in the set, and vice-versa.  If the map is modified
+     * while an iteration over the set is in progress (except through
+     * the iterator's own <tt>remove</tt> operation, or through the
+     * <tt>setValue</tt> operation on a map entry returned by the
+     * iterator) the results of the iteration are undefined.  The set
+     * supports element removal, which removes the corresponding
+     * mapping from the map, via the <tt>Iterator.remove</tt>,
+     * <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt> and
+     * <tt>clear</tt> operations.  It does not support the
+     * <tt>add</tt> or <tt>addAll</tt> operations.
+     *
+     * @return a set view of the mappings contained in this map
+     */
     public Set<Map.Entry<K,V>> entrySet() {
         Set<Map.Entry<K,V>> es;
         return (es = entrySet) == null ? (entrySet = new EntrySet()) : es;
@@ -944,39 +976,26 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
     }
 
-重写clone方法，进行覆盖,这里hashmap的clone()方法是浅拷贝的
-    *
-    * 浅拷贝：对一个对象进行clone生成新的对象，新的对象要开辟一块新的内存来存储，
-    * 新对象中的基本类型属性和String类型属性都会开辟新的空间存储，但是如果是引用类型的属性，
-    * 那这个引用类型的属性还是指向原对象的引用属性内存，当对新的对象或原对象的引用属性做出改变的时候，
-    * 两方的引用属性类型的值同时做出改变。(浅拷贝：对象，基本类型属性，String类型属性，都存入新的内存，
-    * 如果是引用数据类型就指向原来的对象，当修改引用的属性时，两个对象的引用属性都发生改变)
-    *
-    *
-    *   1.HashMap的clone方法生成新的对象，新的对象有自己独立的存储空间。
+    /* ------------------------------------------------------------ */
+    // Cloning and serialization
 
-        2.虽然HashMap的clone方法生成了新的对象，但新的HashMap和原来的HashMap所存储的引用类型都是指向的同一存储空间。
-
-        3.新生成的HashMap中的数组属性table是开辟了新的空间的，只是table中的存储的值所指向的内存空间和原来的是一样的。
-        * 这和我理解的浅拷贝的有点不一样。我理解的浅拷贝认为是对象中的引用属性指向的是同一内存地址，
-        * 但HashMap中的table数组却不是指向同一地址，而是table里面的值指向同一地址。
-    *
-    *
-
+    /**
+     * Returns a shallow copy of this <tt>HashMap</tt> instance: the keys and
+     * values themselves are not cloned.
+     *
+     * @return a shallow copy of this map
+     */
     @SuppressWarnings("unchecked")
     @Override
     public Object clone() {
         HashMap<K,V> result;
         try {
-            // 用super来指明调用的是父类的方法。(AbstractMap<?,?>)super.clone();
             result = (HashMap<K,V>)super.clone();
         } catch (CloneNotSupportedException e) {
             // this shouldn't happen, since we are Cloneable
             throw new InternalError(e);
         }
-        // 进行数组的初始化
         result.reinitialize();
-        // 把一个旧的hashmap 塞入到result中。
         result.putMapEntries(this, false);
         return result;
     }
@@ -989,7 +1008,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
                         DEFAULT_INITIAL_CAPACITY;
     }
 
-*
+    /**
      * Save the state of the <tt>HashMap</tt> instance to a stream (i.e.,
      * serialize it).
      *
@@ -999,8 +1018,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
      *             mappings), followed by the key (Object) and value (Object)
      *             for each key-value mapping.  The key-value mappings are
      *             emitted in no particular order.
-
-
+     */
     private void writeObject(java.io.ObjectOutputStream s)
             throws IOException {
         int buckets = capacity();
@@ -1011,11 +1029,10 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         internalWriteEntries(s);
     }
 
-*
+    /**
      * Reconstitute the {@code HashMap} instance from a stream (i.e.,
      * deserialize it).
-
-
+     */
     private void readObject(java.io.ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         // Read in the threshold (ignored), loadfactor, and any hidden stuff
@@ -1057,8 +1074,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
     }
 
- ------------------------------------------------------------
-
+    /* ------------------------------------------------------------ */
     // iterators
 
     abstract class HashIterator {
@@ -1122,8 +1138,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         public final Map.Entry<K,V> next() { return nextNode(); }
     }
 
- ------------------------------------------------------------
-
+    /* ------------------------------------------------------------ */
     // spliterators
 
     static class HashMapSpliterator<K,V> {
@@ -1377,18 +1392,17 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
     }
 
- ------------------------------------------------------------
-
+    /* ------------------------------------------------------------ */
     // LinkedHashMap support
 
 
+    /*
      * The following package-protected methods are designed to be
      * overridden by LinkedHashMap, but not by any other subclass.
      * Nearly all other internal methods are also package-protected
      * but are declared final, so can be used by LinkedHashMap, view
      * classes, and HashSet.
-
-
+     */
 
     // Create a regular (non-tree) node
     Node<K,V> newNode(int hash, K key, V value, Node<K,V> next) {
@@ -1410,10 +1424,9 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         return new TreeNode<>(p.hash, p.key, p.value, next);
     }
 
-*
-     * 经过克隆的数组，进行初始化。这里数组，键值对。都为null.
-
-
+    /**
+     * Reset to initial default state.  Called by clone and readObject.
+     */
     void reinitialize() {
         table = null;
         entrySet = null;
@@ -1442,16 +1455,14 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
         }
     }
 
- ------------------------------------------------------------
-
+    /* ------------------------------------------------------------ */
     // Tree bins
 
-*
+    /**
      * Entry for Tree bins. Extends LinkedHashMap.Entry (which in turn
      * extends Node) so can be used as extension of either regular or
      * linked node.
-
-
+     */
     static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V> {
         TreeNode<K,V> parent;  // red-black tree links
         TreeNode<K,V> left;
@@ -1462,10 +1473,9 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             super(hash, key, val, next);
         }
 
-*
+        /**
          * Returns root of tree containing this node.
-
-
+         */
         final TreeNode<K,V> root() {
             for (TreeNode<K,V> r = this, p;;) {
                 if ((p = r.parent) == null)
@@ -1474,10 +1484,9 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             }
         }
 
-*
+        /**
          * Ensures that the given root is the first node of its bin.
-
-
+         */
         static <K,V> void moveRootToFront(Node<K,V>[] tab, TreeNode<K,V> root) {
             int n;
             if (root != null && tab != null && (n = tab.length) > 0) {
@@ -1500,12 +1509,11 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             }
         }
 
-*
+        /**
          * Finds the node starting at root p with the given hash and key.
          * The kc argument caches comparableClassFor(key) upon first use
          * comparing keys.
-
-
+         */
         final TreeNode<K,V> find(int h, Object k, Class<?> kc) {
             TreeNode<K,V> p = this;
             do {
@@ -1533,22 +1541,20 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             return null;
         }
 
-*
+        /**
          * Calls find for root node.
-
-
+         */
         final TreeNode<K,V> getTreeNode(int h, Object k) {
             return ((parent != null) ? root() : this).find(h, k, null);
         }
 
-*
+        /**
          * Tie-breaking utility for ordering insertions when equal
          * hashCodes and non-comparable. We don't require a total
          * order, just a consistent insertion rule to maintain
          * equivalence across rebalancings. Tie-breaking further than
          * necessary simplifies testing a bit.
-
-
+         */
         static int tieBreakOrder(Object a, Object b) {
             int d;
             if (a == null || b == null ||
@@ -1559,11 +1565,10 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             return d;
         }
 
-*
+        /**
          * Forms tree of the nodes linked from this node.
          * @return root of tree
-
-
+         */
         final void treeify(Node<K,V>[] tab) {
             TreeNode<K,V> root = null;
             for (TreeNode<K,V> x = this, next; x != null; x = next) {
@@ -1606,11 +1611,10 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             moveRootToFront(tab, root);
         }
 
-*
+        /**
          * Returns a list of non-TreeNodes replacing those linked from
          * this node.
-
-
+         */
         final Node<K,V> untreeify(HashMap<K,V> map) {
             Node<K,V> hd = null, tl = null;
             for (Node<K,V> q = this; q != null; q = q.next) {
@@ -1624,10 +1628,9 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             return hd;
         }
 
-*
+        /**
          * Tree version of putVal.
-
-
+         */
         final TreeNode<K,V> putTreeVal(HashMap<K,V> map, Node<K,V>[] tab,
                                        int h, K k, V v) {
             Class<?> kc = null;
@@ -1674,7 +1677,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             }
         }
 
-*
+        /**
          * Removes the given node, that must be present before this call.
          * This is messier than typical red-black deletion code because we
          * cannot swap the contents of an interior node with a leaf
@@ -1683,8 +1686,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
          * linkages. If the current tree appears to have too few nodes,
          * the bin is converted back to a plain bin. (The test triggers
          * somewhere between 2 and 6 nodes, depending on tree structure).
-
-
+         */
         final void removeTreeNode(HashMap<K,V> map, Node<K,V>[] tab,
                                   boolean movable) {
             int n;
@@ -1780,7 +1782,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
                 moveRootToFront(tab, r);
         }
 
-*
+        /**
          * Splits nodes in a tree bin into lower and upper tree bins,
          * or untreeifies if now too small. Called only from resize;
          * see above discussion about split bits and indices.
@@ -1789,8 +1791,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
          * @param tab the table for recording bin heads
          * @param index the index of the table being split
          * @param bit the bit of hash to split on
-
-
+         */
         final void split(HashMap<K,V> map, Node<K,V>[] tab, int index, int bit) {
             TreeNode<K,V> b = this;
             // Relink into lo and hi lists, preserving order
@@ -1838,8 +1839,7 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             }
         }
 
- ------------------------------------------------------------
-
+        /* ------------------------------------------------------------ */
         // Red-black tree methods, all adapted from CLR
 
         static <K,V> TreeNode<K,V> rotateLeft(TreeNode<K,V> root,
@@ -2025,10 +2025,9 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
             }
         }
 
-*
+        /**
          * Recursive invariant check
-
-
+         */
         static <K,V> boolean checkInvariants(TreeNode<K,V> t) {
             TreeNode<K,V> tp = t.parent, tl = t.left, tr = t.right,
                     tb = t.prev, tn = (TreeNode<K,V>)t.next;
@@ -2053,4 +2052,4 @@ public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneabl
     }
 
 }
-*/
+
