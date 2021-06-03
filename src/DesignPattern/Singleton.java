@@ -30,7 +30,8 @@ public class Singleton {
     }
 }
 
-/**延迟加载就是调用get()方法时实例才被创建（先不急着实例化出对象，等要用的时候才给你创建出来。不着急，故又称为“懒汉模式”），
+/**
+ * 延迟加载就是调用get()方法时实例才被创建（先不急着实例化出对象，等要用的时候才给你创建出来。不着急，故又称为“懒汉模式”），
         常见的实现方法就是在get方法中进行new实例化。
  “懒汉模式”的优缺点：
 
@@ -104,4 +105,78 @@ class Singleton4 {
         }
         return instance;
     }
+}
+
+/**单例模式1 饿汉模式设计模式*/
+class TestSingleton1{
+    // 在构造器之前就要先创建对象
+    private final static  TestSingleton1 testsingleton1 = new TestSingleton1();
+
+    // 私有化构造器,不能通过构造器来创建对象。
+    private TestSingleton1() {}
+
+    // 创建公共的静态方法，静态方法不用创建对象，直接用类就可以调用,返回创建的实例
+    public static TestSingleton1 getTestSingleton1(){
+        return testsingleton1;
+    }
+
+}
+
+/**单例模式2 懒汉设计模式*/
+class TestSingleton2{
+
+    private static TestSingleton2 testsingleton2;
+
+    // 私有化构造器
+    private TestSingleton2(){}
+
+    // 提供对象
+    public static TestSingleton2 getTestsingleton2(){
+        if (testsingleton2 == null){
+            testsingleton2 = new TestSingleton2();
+        }
+        return testsingleton2;
+    }
+
+}
+
+/**单例模式3 线程安全的懒汉设计模式*/
+class TestSingleton3{
+
+    private static TestSingleton3 testsingleton3;
+
+    // 私有化构造器
+    private TestSingleton3(){}
+
+    // 提供对象
+    public static synchronized TestSingleton3 getTestsingleton3(){
+        if (testsingleton3 == null){
+            testsingleton3 = new TestSingleton3();
+        }
+        return testsingleton3;
+    }
+
+}
+
+/**单例模式4 优化的线程安全方法*/
+class TestSingleton4{
+
+    private static TestSingleton4 testsingleton4;
+
+    // 私有化构造器
+    private TestSingleton4(){}
+
+    // 提供对象
+    public static TestSingleton4 getTestsingleton4(){
+        if (testsingleton4 == null){
+            synchronized (TestSingleton4.class) {
+                // 某个线程取得了类锁，实例化对象前第二次检查instance是否已经被实例化出来，如果没有，才最终实例出对象
+                if (testsingleton4 == null) {
+                    testsingleton4 = new TestSingleton4();
+                }
+            }
+        }
+        return testsingleton4;
+    }
+
 }
