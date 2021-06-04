@@ -180,3 +180,29 @@ class TestSingleton4{
     }
 
 }
+
+/** 单例模式4 优化的线程安全方法,采取的是更优化的懒汉模式 */
+class TestSingleton5{
+    // 先定义一下对象
+    private static TestSingleton5 testSingleton5;
+    // 私有化构造器
+    private TestSingleton5(){}
+    // 构造返回的静态方法
+    public static TestSingleton5 getTestSingleton5(){
+        if (testSingleton5 == null){
+            // 此时进行锁的判断
+            synchronized (TestSingleton5.class){
+                testSingleton5 = new TestSingleton5();
+            }
+
+        }
+        return testSingleton5;
+    }
+}
+
+/**  在学习多线程之后，再回来讨论这个问题
+1.如高并发场景下,生成客户订单号必须保证系统中唯一性,正常我们会根据规则写一个ID生成器,然后定义一个方法返回字符串。
+    此时需要保证执行这个方法时保证唯一性，所有可以定义成单例模式
+2.对象经常被使用,可能一个对象中多个方法都需要使用。常见是Spring的@AutoWired注入时对象都为单例模式
+3.线程池的使用,线程池使用时，便于管理线程，会定义成全局的。
+*/
