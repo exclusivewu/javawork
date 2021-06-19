@@ -50,6 +50,7 @@ public class P88MergeSortedArray{
 
             int index1 = m - 1, index2 = n - 1;
             int indexMerge = m + n - 1;
+            // 由于需要
             while (index2 >= 0) {
                 if (index1 < 0) {
                     nums1[indexMerge--] = nums2[index2--];

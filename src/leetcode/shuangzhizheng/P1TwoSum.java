@@ -54,7 +54,7 @@ public class P1TwoSum{
     }
     // 基本的思想就是循环来寻找索引地址,
     class Solution {
-        // 暴力破解
+        // 暴力破解，这个不是有序的数组，无法用双指针的方式来获取。
         public int[] twoSum(int[] nums, int target) {
             for (int i = 0; i < nums.length - 1; i++) {
                 for (int j = i+1; j < nums.length; j++) {
@@ -67,6 +67,5 @@ public class P1TwoSum{
             return null;
         }
     }
-
 }
 
